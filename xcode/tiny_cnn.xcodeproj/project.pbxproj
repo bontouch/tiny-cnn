@@ -10,7 +10,8 @@
 		2A7D8E1C1D08212A007A4726 /* readme.md in Sources */ = {isa = PBXBuildFile; fileRef = 2A7D8E0D1D08212A007A4726 /* readme.md */; };
 		2A7D8E1D1D08212A007A4726 /* readme.md in Sources */ = {isa = PBXBuildFile; fileRef = 2A7D8E0F1D08212A007A4726 /* readme.md */; };
 		2A7D8E201D08212A007A4726 /* readme.md in Sources */ = {isa = PBXBuildFile; fileRef = 2A7D8E131D08212A007A4726 /* readme.md */; };
-		2A7D8E231D08212A007A4726 /* train.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2A7D8E1A1D08212A007A4726 /* train.cpp */; };
+		2A7D8E431D083955007A4726 /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = 2A7D8E361D083955007A4726 /* README.md */; };
+		2A7D8E441D083955007A4726 /* test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2A7D8E371D083955007A4726 /* test.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -80,6 +81,22 @@
 		2A7D8E181D08212A007A4726 /* test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = test.cpp; sourceTree = "<group>"; };
 		2A7D8E191D08212A007A4726 /* test_with_stb_image.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = test_with_stb_image.cpp; sourceTree = "<group>"; };
 		2A7D8E1A1D08212A007A4726 /* train.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = train.cpp; sourceTree = "<group>"; };
+		2A7D8E331D083955007A4726 /* .gitattributes */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .gitattributes; sourceTree = "<group>"; };
+		2A7D8E341D083955007A4726 /* .gitignore */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
+		2A7D8E351D083955007A4726 /* picotest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = picotest.h; sourceTree = "<group>"; };
+		2A7D8E361D083955007A4726 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		2A7D8E371D083955007A4726 /* test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = test.cpp; sourceTree = "<group>"; };
+		2A7D8E381D083955007A4726 /* test_average_pooling_layer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = test_average_pooling_layer.h; sourceTree = "<group>"; };
+		2A7D8E391D083955007A4726 /* test_convolutional_layer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = test_convolutional_layer.h; sourceTree = "<group>"; };
+		2A7D8E3A1D083955007A4726 /* test_dropout_layer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = test_dropout_layer.h; sourceTree = "<group>"; };
+		2A7D8E3B1D083955007A4726 /* test_fully_connected_layer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = test_fully_connected_layer.h; sourceTree = "<group>"; };
+		2A7D8E3C1D083955007A4726 /* test_large_thread_count.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = test_large_thread_count.h; sourceTree = "<group>"; };
+		2A7D8E3D1D083955007A4726 /* test_lrn_layer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = test_lrn_layer.h; sourceTree = "<group>"; };
+		2A7D8E3E1D083955007A4726 /* test_max_pooling_layer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = test_max_pooling_layer.h; sourceTree = "<group>"; };
+		2A7D8E3F1D083955007A4726 /* test_network.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = test_network.h; sourceTree = "<group>"; };
+		2A7D8E401D083955007A4726 /* test_nodes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = test_nodes.h; sourceTree = "<group>"; };
+		2A7D8E411D083955007A4726 /* test_target_cost.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = test_target_cost.h; sourceTree = "<group>"; };
+		2A7D8E421D083955007A4726 /* testhelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = testhelper.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -96,6 +113,7 @@
 		2A7D8DC41D082073007A4726 = {
 			isa = PBXGroup;
 			children = (
+				2A7D8E311D083955007A4726 /* test */,
 				2A7D8E091D08212A007A4726 /* examples */,
 				2A7D8DDA1D0820FD007A4726 /* tiny_cnn */,
 				2A7D8DD71D0820C3007A4726 /* src */,
@@ -275,6 +293,38 @@
 			path = stb_image;
 			sourceTree = "<group>";
 		};
+		2A7D8E311D083955007A4726 /* test */ = {
+			isa = PBXGroup;
+			children = (
+				2A7D8E321D083955007A4726 /* picotest */,
+				2A7D8E371D083955007A4726 /* test.cpp */,
+				2A7D8E381D083955007A4726 /* test_average_pooling_layer.h */,
+				2A7D8E391D083955007A4726 /* test_convolutional_layer.h */,
+				2A7D8E3A1D083955007A4726 /* test_dropout_layer.h */,
+				2A7D8E3B1D083955007A4726 /* test_fully_connected_layer.h */,
+				2A7D8E3C1D083955007A4726 /* test_large_thread_count.h */,
+				2A7D8E3D1D083955007A4726 /* test_lrn_layer.h */,
+				2A7D8E3E1D083955007A4726 /* test_max_pooling_layer.h */,
+				2A7D8E3F1D083955007A4726 /* test_network.h */,
+				2A7D8E401D083955007A4726 /* test_nodes.h */,
+				2A7D8E411D083955007A4726 /* test_target_cost.h */,
+				2A7D8E421D083955007A4726 /* testhelper.h */,
+			);
+			name = test;
+			path = ../test;
+			sourceTree = "<group>";
+		};
+		2A7D8E321D083955007A4726 /* picotest */ = {
+			isa = PBXGroup;
+			children = (
+				2A7D8E331D083955007A4726 /* .gitattributes */,
+				2A7D8E341D083955007A4726 /* .gitignore */,
+				2A7D8E351D083955007A4726 /* picotest.h */,
+				2A7D8E361D083955007A4726 /* README.md */,
+			);
+			path = picotest;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -332,9 +382,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				2A7D8E1C1D08212A007A4726 /* readme.md in Sources */,
-				2A7D8E231D08212A007A4726 /* train.cpp in Sources */,
+				2A7D8E431D083955007A4726 /* README.md in Sources */,
 				2A7D8E1D1D08212A007A4726 /* readme.md in Sources */,
 				2A7D8E201D08212A007A4726 /* readme.md in Sources */,
+				2A7D8E441D083955007A4726 /* test.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
