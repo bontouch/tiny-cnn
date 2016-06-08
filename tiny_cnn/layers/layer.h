@@ -303,6 +303,14 @@ class layer : public node {
         initialized_ = true;
     }
 
+    virtual void save(std::vector<double>& dst) const {
+        auto all_weights = get_weights();
+        for (auto& weight : all_weights) {
+            for (auto w : *weight)
+                dst.push_back(w);
+        }
+    }
+
     virtual void load(const std::vector<double>& src, int& idx) { // NOLINT
         auto all_weights = get_weights();
         for (auto& weight : all_weights) {
