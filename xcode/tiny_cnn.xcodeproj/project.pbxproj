@@ -12,6 +12,7 @@
 		2A7D8E201D08212A007A4726 /* readme.md in Sources */ = {isa = PBXBuildFile; fileRef = 2A7D8E131D08212A007A4726 /* readme.md */; };
 		2A7D8E431D083955007A4726 /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = 2A7D8E361D083955007A4726 /* README.md */; };
 		2A7D8E441D083955007A4726 /* test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2A7D8E371D083955007A4726 /* test.cpp */; };
+		2A7D8E461D085849007A4726 /* test_no_duplicate_symbols.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2A7D8E451D085849007A4726 /* test_no_duplicate_symbols.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -97,6 +98,7 @@
 		2A7D8E401D083955007A4726 /* test_nodes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = test_nodes.h; sourceTree = "<group>"; };
 		2A7D8E411D083955007A4726 /* test_target_cost.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = test_target_cost.h; sourceTree = "<group>"; };
 		2A7D8E421D083955007A4726 /* testhelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = testhelper.h; sourceTree = "<group>"; };
+		2A7D8E451D085849007A4726 /* test_no_duplicate_symbols.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = test_no_duplicate_symbols.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -298,6 +300,7 @@
 			children = (
 				2A7D8E321D083955007A4726 /* picotest */,
 				2A7D8E371D083955007A4726 /* test.cpp */,
+				2A7D8E451D085849007A4726 /* test_no_duplicate_symbols.cpp */,
 				2A7D8E381D083955007A4726 /* test_average_pooling_layer.h */,
 				2A7D8E391D083955007A4726 /* test_convolutional_layer.h */,
 				2A7D8E3A1D083955007A4726 /* test_dropout_layer.h */,
@@ -385,6 +388,7 @@
 				2A7D8E431D083955007A4726 /* README.md in Sources */,
 				2A7D8E1D1D08212A007A4726 /* readme.md in Sources */,
 				2A7D8E201D08212A007A4726 /* readme.md in Sources */,
+				2A7D8E461D085849007A4726 /* test_no_duplicate_symbols.cpp in Sources */,
 				2A7D8E441D083955007A4726 /* test.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
