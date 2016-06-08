@@ -303,7 +303,7 @@ class layer : public node {
         initialized_ = true;
     }
 
-    virtual void save(std::vector<double>& dst) const {
+    virtual void save(std::vector<float_t>& dst) const {
         auto all_weights = get_weights();
         for (auto& weight : all_weights) {
             for (auto w : *weight)
@@ -311,7 +311,7 @@ class layer : public node {
         }
     }
 
-    virtual void load(const std::vector<double>& src, int& idx) { // NOLINT
+    virtual void load(const std::vector<float_t>& src, size_t& idx) { // NOLINT
         auto all_weights = get_weights();
         for (auto& weight : all_weights) {
             for (auto& w : *weight) w = src[idx++];

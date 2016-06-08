@@ -422,6 +422,22 @@ public:
         is.precision(std::numeric_limits<tiny_cnn::float_t>::digits10);
         net_.load(is);
     }
+
+    /**
+     * save network weights to array
+     * @attention this saves only network *weights*, not network configuration
+     **/
+    void save(std::vector<float_t>& dst) const {
+        net_.save(dst);
+    }
+    
+    /**
+     * load network weights from array
+     * @attention this loads only network *weights*, not network configuration
+     **/
+    void load(const std::vector<float_t>& src, size_t& idx) {
+        net_.load(src,idx);
+    }
     
     /**
      * load network weights from filepath, 30 times faster than stream reading

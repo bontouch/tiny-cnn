@@ -150,9 +150,14 @@ class nodes {
             l->load(is);
         }
     }
+    
+    virtual void save(std::vector<float_t>& dst) const {
+        for (auto& l : nodes_) {
+            l->save(dst);
+        }
+    }
 
-    virtual void load(const std::vector<float_t>& vec) {
-        int idx = 0;
+    virtual void load(const std::vector<float_t>& vec, size_t& idx) {
         setup(false, 1);
         for (auto& l : nodes_) {
             l->load(vec, idx);
