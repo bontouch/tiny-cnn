@@ -647,6 +647,23 @@ public:
     }
 
     /**
+     * save network weights to array
+     * @attention this saves only network *weights*, not network configuration
+     **/
+    void save(std::vector<float_t>& dst) const {
+        net_.save(dst);
+    }
+    
+    /**
+     * load network weights from array
+     * @attention this loads only network *weights*, not network configuration
+     **/
+    void load(const std::vector<float_t>& src, size_t& idx) {
+        net_.load(src,idx);
+    }
+
+
+    /**
     * load network weights from filepath, 30 times faster than stream reading
     * @deprecated use load_weights instead.
     **/
