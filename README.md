@@ -1,11 +1,15 @@
-tiny-dnn: A header-only, dependency-free deep learning framework for C++11
-========
+<div align="center">
+  <img src="https://github.com/tiny-dnn/tiny-dnn/blob/master/docs/logo/TinyDNN-logo-letters-alpha-version.png"><br><br>
+</div>
+-----------------
 
-| **Linux/Mac OS** | **Windows** | **Coveralls** |
+| **`Linux/Mac OS`** | **`Windows`** ||
 |------------------|-------------|---------------|
-|[![Build Status](https://travis-ci.org/tiny-dnn/tiny-dnn.svg?branch=master)](https://travis-ci.org/tiny-dnn/tiny-dnn)|[![Build status](https://ci.appveyor.com/api/projects/status/a5syoifm8ct7b4l2?svg=true)](https://ci.appveyor.com/project/tinydnn/tiny-dnn)|[![Coverage Status](https://coveralls.io/repos/github/tiny-dnn/tiny-dnn/badge.svg?branch=master)](https://coveralls.io/github/tiny-dnn/tiny-dnn?branch=master)|
+|[![Build Status](https://travis-ci.org/tiny-dnn/tiny-dnn.svg?branch=master)](https://travis-ci.org/tiny-dnn/tiny-dnn)|[![Build status](https://ci.appveyor.com/api/projects/status/a5syoifm8ct7b4l2?svg=true)](https://ci.appveyor.com/project/tinydnn/tiny-dnn)| [![License](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](https://raw.githubusercontent.com/tiny-dnn/tiny-dnn/master/LICENSE) [![Docs](https://img.shields.io/badge/docs-latest-blue.svg)](http://tiny-dnn.readthedocs.io/) [![Coverage Status](https://coveralls.io/repos/github/tiny-dnn/tiny-dnn/badge.svg?branch=master)](https://coveralls.io/github/tiny-dnn/tiny-dnn?branch=master)|
 
-tiny-dnn is a C++11 implementation of deep learning. It is suitable for deep learning on limited computational resource, embedded systems and IoT devices.
+**tiny-dnn** is a C++11 implementation of deep learning. It is suitable for deep learning on limited computational resource, embedded systems and IoT devices.
+
+## Table of contents
 
 * [Features](#features)
 * [Comparison with other libraries](#comparison-with-other-libraries)
@@ -68,7 +72,7 @@ Check out the [documentation](http://tiny-dnn.readthedocs.io/) for more info.
     - average unpooling
 	- max unpooling
 - normalization
-    - contrast normalization
+    - contrast normalization (only forward pass)
     - batch normalization
 - split/merge
     - concat
@@ -116,17 +120,21 @@ Some cmake options are available:
 
 |options|description|default|additional requirements to use|
 |-----|-----|----|----|
-|USE_TBB|Use [Intel TBB](https://www.threadingbuildingblocks.org/) for parallelization|OFF*|[Intel TBB](https://www.threadingbuildingblocks.org/)|
-|USE_OMP|Use OpenMP for parallelization|OFF*|[OpenMP Compiler](http://openmp.org/wp/openmp-compilers/)|
+|USE_TBB|Use [Intel TBB](https://www.threadingbuildingblocks.org/) for parallelization|OFF*1|[Intel TBB](https://www.threadingbuildingblocks.org/)|
+|USE_OMP|Use OpenMP for parallelization|OFF*1|[OpenMP Compiler](http://openmp.org/wp/openmp-compilers/)|
 |USE_SSE|Use Intel SSE instruction set|ON|Intel CPU which supports SSE|
 |USE_AVX|Use Intel AVX instruction set|ON|Intel CPU which supports AVX|
 |USE_OPENCV|Use OpenCV for sample/test programs|ON|[Open Source Computer Vision Library](http://opencv.org/)|
-|BUILD_TESTS|Build unit tests|OFF|-**|
+|USE_SERIALIZER|Enable model serialization|ON*2|-|
+|BUILD_TESTS|Build unit tests|OFF|-*3|
 |BUILD_EXAMPLES|Build example projects|ON|-|
 |BUILD_DOCS|Build documentation|OFF|[Doxygen](http://www.doxygen.org/)|
 
-*tiny-dnn use c++11 standard library for parallelization by default
-**to build tests, type `git submodule update --init` before build
+*1 tiny-dnn use c++11 standard library for parallelization by default
+
+*2 If you don't use serialization, you can switch off to speedup compilation time.
+
+*3 tiny-dnn requires picotest as submodule. You need to use ```git submodule update --init``` command to run unit tests
 
 For example, type the following commands if you want to use intel TBB and build tests:
 ```bash
@@ -173,12 +181,11 @@ void construct_cnn() {
     net.train<mse>(optimizer, train_images, train_labels, 30, 50);
 
     // save
-    std::ofstream ofs("weights");
-    ofs << net;
+    net.save("net");
 
     // load
-    // std::ifstream ifs("weights");
-    // ifs >> net;
+    // network<sequential> net2;
+    // net2.load("net");
 }
 ```
 construct multi-layer perceptron(mlp)
@@ -219,7 +226,7 @@ more sample, read examples/main.cpp or [MNIST example](https://github.com/tiny-d
 
 ## Contributing
 Since deep learning community is rapidly growing, we'd love to get contributions from you to accelerate tiny-dnn development!
-For a quick guide to contributing, take a look at the [Contribution Documents](doc/CONTRIBUTING.md).
+For a quick guide to contributing, take a look at the [Contribution Documents](docs/developer_guides/How-to-contribute.md).
 
 ## References
 [1] Y. Bengio, [Practical Recommendations for Gradient-Based Training of Deep Architectures.](http://arxiv.org/pdf/1206.5533v2.pdf) 

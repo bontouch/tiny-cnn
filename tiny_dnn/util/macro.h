@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2013, Taiga Nomi
+    Copyright (c) 2016, Taiga Nomi
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -9,7 +9,7 @@
     * Redistributions in binary form must reproduce the above copyright
     notice, this list of conditions and the following disclaimer in the
     documentation and/or other materials provided with the distribution.
-    * Neither the name of the <organization> nor the
+    * Neither the name of the tiny-dnn nor the
     names of its contributors may be used to endorse or promote products
     derived from this software without specific prior written permission.
 
@@ -25,77 +25,27 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #pragma once
-#include <cstddef>
 
-/**
- * define if you want to use intel TBB library
- */
-//#define CNN_USE_TBB
+#define CNN_UNREFERENCED_PARAMETER(x) (void)(x)
 
-/**
- * define to enable avx vectorization
- */
-//#define CNN_USE_AVX
+#if defined(_MSC_VER) && (_MSC_VER <= 1800)
+// msvc2013 doesn't have move constructor
+#define CNN_DEFAULT_MOVE_CONSTRUCTOR_UNAVAILABLE
+#define CNN_DEFAULT_ASSIGNMENT_OPERATOR_UNAVAILABLE
+#endif
 
-/**
- * define to enable sse2 vectorization
- */
-//#define CNN_USE_SSE
-
-/**
- * define to enable OMP parallelization
- */
-//#define CNN_USE_OMP
-
-/**
- * define to enable Grand Central Dispatch parallelization
- */
-#define CNN_USE_GCD
-
-/**
- * define to use exceptions
- */
-#define CNN_USE_EXCEPTIONS
-
-/**
- * comment out if you want tiny-dnn to be quiet 
- */
-#define CNN_USE_STDOUT
-
-
-/**
- * disable serialization/deserialization function
- * You can uncomment this to speedup compilation&linking time,
- * if you don't use network::save / network::load functions.
- **/
-//#define CNN_NO_SERIALIZATION
-
-/**
- * number of task in batch-gradient-descent.
- * @todo automatic optimization
- */
-#ifdef CNN_USE_OMP
-#define CNN_TASK_SIZE 100
+#if defined(_MSC_VER) && (_MSC_VER <= 1800)
+// msvc2013 doesn't have alignof operator
+#define CNN_ALIGNOF(x) __alignof(x)
 #else
-#define CNN_TASK_SIZE 8
+#define CNN_ALIGNOF(x) alignof(x)
 #endif
 
-#if !defined(_MSC_VER) && !defined(_WIN32) && !defined(WIN32)
-#define CNN_USE_GEMMLOWP // gemmlowp doesn't support MSVC/mingw
+#if !defined(_MSC_VER) || (_MSC_VER >= 1900) // default generation of move constructor is unsupported in VS2013
+#define CNN_USE_DEFAULT_MOVE_CONSTRUCTORS
 #endif
 
-namespace tiny_dnn {
+#if defined _WIN32
+#define CNN_WINDOWS
+#endif
 
-/**
- * calculation data type
- * you can change it to float, or user defined class (fixed point,etc)
- **/
-typedef float float_t;
-
-/**
- * size of layer, model, data etc.
- * change to smaller type if memory footprint is severe
- **/
-typedef std::size_t cnn_size_t;
-
-}

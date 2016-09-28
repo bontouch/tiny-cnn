@@ -33,6 +33,7 @@
 #include <cereal/archives/json.hpp>
 #include <cereal/types/memory.hpp>
 #include "tiny_dnn/util/nn_error.h"
+#include "tiny_dnn/util/macro.h"
 
 namespace tiny_dnn {
 
@@ -60,6 +61,8 @@ public:
     }
 
     std::shared_ptr<layer> load(const std::string& layer_name, InputArchive& ar) {
+        check_if_serialization_enabled();
+
         if (loaders_.find(layer_name) == loaders_.end()) {
             throw nn_error("Failed to generate layer. Generator for " + layer_name + " is not found.\n"
                            "Please use CNN_REGISTER_LAYER_DESERIALIZER macro to register appropriate generator");
@@ -69,6 +72,8 @@ public:
     }
 
     void save(const std::string& layer_name, OutputArchive & ar, const layer *l) {
+        check_if_serialization_enabled();
+
         if (savers_.find(layer_name) == savers_.end()) {
             throw nn_error("Failed to generate layer. Generator for " + layer_name + " is not found.\n"
                 "Please use CNN_REGISTER_LAYER_DESERIALIZER macro to register appropriate generator");
@@ -89,6 +94,14 @@ public:
         return instance;
     }
 private:
+    void check_if_serialization_enabled() const {
+#ifdef CNN_NO_SERIALIZATION
+        static_assert(false, "You are using save/load functions, but serialization function is disabled in current configuration.\n\n"
+                             "You need to undef CNN_NO_SERIALIZATION to enable these functions.\n"
+                             "If you are using cmake, you can use -DUSE_SERIALIZER=ON option.\n\n");
+#endif
+    }
+
     /** layer-type -> generator  */
     std::map<std::string, std::function<std::shared_ptr<layer>(void*)>> loaders_;
 
@@ -104,7 +117,7 @@ namespace detail {
 template <typename InputArchive, typename T>
 std::shared_ptr<T> load_layer_impl(InputArchive& ia) {
 
-    using ST = typename std::aligned_storage<sizeof(T), alignof(T)>::type;
+    using ST = typename std::aligned_storage<sizeof(T), CNN_ALIGNOF(T)>::type;
 
     auto valid = std::make_shared<bool>(false);
 
@@ -170,6 +183,15 @@ static tiny_dnn::detail::automatic_layer_generator_register<cereal::BinaryInputA
 #define CNN_REGISTER_LAYER_SERIALIZER_WITH_ACTIVATION(layer_type, activation_type, layer_name) \
 CNN_REGISTER_LAYER_SERIALIZER_BODY(layer_type<tiny_dnn::activation::activation_type>, #layer_name "<" #activation_type ">", layer_name##_##activation_type)
 
+
+#ifdef CNN_NO_SERIALIZATION
+
+  // ignore all serialization functions
+#define CNN_REGISTER_LAYER_SERIALIZER(layer_type, layer_name)
+#define CNN_REGISTER_LAYER_SERIALIZER_WITH_ACTIVATIONS(layer_type, layer_name)
+
+#else
+
 /**
  * Register layer serializer
  * Once you define, you can create layer from text via generte_layer(InputArchive)
@@ -191,4 +213,5 @@ CNN_REGISTER_LAYER_SERIALIZER_WITH_ACTIVATION(layer_type, leaky_relu, layer_name
 CNN_REGISTER_LAYER_SERIALIZER_WITH_ACTIVATION(layer_type, elu, layer_name); \
 CNN_REGISTER_LAYER_SERIALIZER_WITH_ACTIVATION(layer_type, tan_hp1m2, layer_name)
 
+#endif // CNN_NO_SERIALIZATION
 
