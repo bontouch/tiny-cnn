@@ -25,7 +25,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #pragma once
-#include "picotest/picotest.h"
+ #include "gtest/gtest.h"
 #include "testhelper.h"
 #include "tiny_dnn/tiny_dnn.h"
 
@@ -140,7 +140,7 @@ TEST(network, add) {
     network<sequential> net;
     net << convolutional_layer<identity>(32, 32, 5, 3, 6, padding::same);
 
-    EXPECT_EQ(net.depth(), 1);
+    EXPECT_EQ(net.depth(), static_cast<cnn_size_t>(1));
 }
 
 TEST(network, manual_init) {
@@ -155,9 +155,9 @@ TEST(network, manual_init) {
     vec_t* c1_b = net[0]->weights()[1];
     vec_t* f1_w = net[1]->weights()[0];
 
-    EXPECT_EQ(c1_w->size(), 9);
-    EXPECT_EQ(c1_b->size(), 1);
-    EXPECT_EQ(f1_w->size(), 2);
+    EXPECT_EQ(c1_w->size(), static_cast<cnn_size_t>(9));
+    EXPECT_EQ(c1_b->size(), static_cast<cnn_size_t>(1));
+    EXPECT_EQ(f1_w->size(), static_cast<cnn_size_t>(2));
 
     *c1_w = { 0,1,2,3,4,5,6,7,8 };
     *c1_b = { 1 };
@@ -546,6 +546,46 @@ TEST(network, read_write)
         tiny_dnn::float_t eps = std::abs(res1[i]) * 1e-5f;
         ASSERT_TRUE(std::abs(res1[i] - res2[i]) < eps);
     }
+}
+
+TEST(network, trainable) {
+    auto net = make_mlp<sigmoid>({ 2,3,2,1 }); // fc(2,3) - fc(3,2) - fc(2,1)
+
+    // trainable=false, or "freeze" 2nd layer fc(3,2)
+    net[1]->set_trainable(false);
+
+    vec_t w0 = { 0,1,2,3,4,5 };
+    vec_t w1 = { 6,7,8,9,8,7 };
+    vec_t w2 = { 6,5 };
+
+    *net[0]->weights()[0] = { 0,1,2,3,4,5 };
+    *net[1]->weights()[0] = { 6,7,8,9,8,7 };
+    *net[2]->weights()[0] = { 6,5 };
+
+    adam a;
+
+    net.init_weight();
+
+    auto w0_standby = *net[0]->weights()[0];
+    auto w1_standby = *net[1]->weights()[0];
+    auto w2_standby = *net[2]->weights()[0];
+
+    EXPECT_NE(w0, w0_standby);
+    EXPECT_EQ(w1, w1_standby);
+    EXPECT_NE(w2, w2_standby);
+
+    std::vector<vec_t> data{ {1,0}, {0,2} };
+    std::vector<vec_t> out{ {2}, {1} };
+
+    net.fit<mse>(a, data, out, 1, 1);
+
+    auto w0_after_update = *net[0]->weights()[0];
+    auto w1_after_update = *net[1]->weights()[0];
+    auto w2_after_update = *net[2]->weights()[0];
+
+    EXPECT_NE(w0, w0_after_update);
+    EXPECT_EQ(w1, w1_after_update);
+    EXPECT_NE(w2, w2_after_update);
 }
 
 } // namespace tiny-dnn

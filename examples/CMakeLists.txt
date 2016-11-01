@@ -2,6 +2,8 @@ add_executable(benchmarks_all benchmarks/main.cpp)
 target_link_libraries(benchmarks_all
     ${project_library_target_name} ${REQUIRED_LIBRARIES})
 
+if(USE_SERIALIZER)
+
 add_executable(example_mnist_train mnist/train.cpp)
 target_link_libraries(example_mnist_train
     ${project_library_target_name} ${REQUIRED_LIBRARIES})
@@ -13,6 +15,8 @@ target_link_libraries(example_mnist_test
 add_executable(example_deconv_train deconv/train.cpp)
 target_link_libraries(example_deconv_train
     ${project_library_target_name} ${REQUIRED_LIBRARIES})
+
+endif()
 
 add_executable(example_deconv_visual deconv/visual.cpp)
 target_link_libraries(example_deconv_visual
@@ -26,6 +30,7 @@ find_package(Protobuf QUIET)
 if(PROTOBUF_FOUND)
     set(proto_file "${CMAKE_SOURCE_DIR}/tiny_dnn/io/caffe/caffe.pb.cc")
     if(EXISTS ${proto_file})
+        include_directories(${PROTOBUF_INCLUDE_DIRS})
         add_executable(example_caffe_converter
                        caffe_converter/caffe_converter.cpp ${proto_file})
         target_link_libraries(example_caffe_converter

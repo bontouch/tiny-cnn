@@ -25,7 +25,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #pragma once
-#include "picotest/picotest.h"
+ #include "gtest/gtest.h"
 #include "testhelper.h"
 #include "tiny_dnn/tiny_dnn.h"
 
@@ -156,12 +156,12 @@ TEST(convolutional, with_stride) {
     /*
       forward - pass:
 
-      [0,1,2,3,4, 
-       1,2,3,4,5,          [1,1,1,           [ 9.5,    18.5,      
-       2,3,4,5,6,  *  0.5*  1,1,1,  + 0.5 = 
+      [0,1,2,3,4,
+       1,2,3,4,5,          [1,1,1,           [ 9.5,    18.5,
+       2,3,4,5,6,  *  0.5*  1,1,1,  + 0.5 =
        3,4,5,6,7,           1,1,1]            18.5,    27.5]
        4,5,6,7,8]
-    
+
     */
 
     float_t in[] = {
@@ -253,6 +253,8 @@ TEST(convolutional, fprop_avx) {
 
     tensor_buf buf(l), buf2(l);
 
+    l.set_backend_type(tiny_dnn::core::backend_t::tiny_dnn);
+
     l.forward_propagation(buf.in_buf(), buf.out_buf());
 
     l.set_backend_type(tiny_dnn::core::backend_t::avx);
@@ -274,6 +276,8 @@ TEST(convolutional, bprop_avx) {
 
     tensor_buf data(l), grad1(l);
     tensor_buf grad2(grad1);
+
+    l.set_backend_type(tiny_dnn::core::backend_t::tiny_dnn);
 
     l.forward_propagation(data.in_buf(), data.out_buf());
     l.back_propagation(data.in_buf(), data.out_buf(), grad1.out_buf(), grad1.in_buf());
@@ -298,6 +302,8 @@ TEST(convolutional, fprop_avx_1x1out) {
 
     tensor_buf buf(l), buf2(l);
 
+    l.set_backend_type(tiny_dnn::core::backend_t::tiny_dnn);
+
     l.forward_propagation(buf.in_buf(), buf.out_buf());
 
     l.set_backend_type(tiny_dnn::core::backend_t::avx);
@@ -318,6 +324,8 @@ TEST(convolutional, bprop_avx_1x1out) {
 
     tensor_buf data(l), grad1(l);
     tensor_buf grad2(grad1);
+
+    l.set_backend_type(tiny_dnn::core::backend_t::tiny_dnn);
 
     l.forward_propagation(data.in_buf(), data.out_buf());
     l.back_propagation(data.in_buf(), data.out_buf(), grad1.out_buf(), grad1.in_buf());
@@ -342,6 +350,8 @@ TEST(convolutional, fprop_avx_hstride) {
 
     tensor_buf buf(l), buf2(l);
 
+    l.set_backend_type(tiny_dnn::core::backend_t::tiny_dnn);
+
     l.forward_propagation(buf.in_buf(), buf.out_buf());
 
     l.set_backend_type(tiny_dnn::core::backend_t::avx);
@@ -362,6 +372,8 @@ TEST(convolutional, bprop_avx_hstride) {
 
     tensor_buf data(l), grad1(l);
     tensor_buf grad2(grad1);
+
+    l.set_backend_type(tiny_dnn::core::backend_t::tiny_dnn);
 
     l.forward_propagation(data.in_buf(), data.out_buf());
     l.back_propagation(data.in_buf(), data.out_buf(), grad1.out_buf(), grad1.in_buf());
@@ -386,6 +398,8 @@ TEST(convolutional, fprop_avx_hstride_1x1out) {
 
     tensor_buf buf(l), buf2(l);
 
+    l.set_backend_type(tiny_dnn::core::backend_t::tiny_dnn);
+
     l.forward_propagation(buf.in_buf(), buf.out_buf());
 
     l.set_backend_type(tiny_dnn::core::backend_t::avx);
@@ -406,6 +420,8 @@ TEST(convolutional, bprop_avx_hstride_1x1out) {
 
     tensor_buf data(l), grad1(l);
     tensor_buf grad2(grad1);
+
+    l.set_backend_type(tiny_dnn::core::backend_t::tiny_dnn);
 
     l.forward_propagation(data.in_buf(), data.out_buf());
     l.back_propagation(data.in_buf(), data.out_buf(), grad1.out_buf(), grad1.in_buf());
@@ -430,6 +446,8 @@ TEST(convolutional, fprop_avx_wstride) {
 
     tensor_buf buf(l), buf2(l);
 
+    l.set_backend_type(tiny_dnn::core::backend_t::tiny_dnn);
+
     l.forward_propagation(buf.in_buf(), buf.out_buf());
 
     l.set_backend_type(tiny_dnn::core::backend_t::avx);
@@ -450,6 +468,8 @@ TEST(convolutional, bprop_avx_wstride) {
 
     tensor_buf data(l), grad1(l);
     tensor_buf grad2(grad1);
+
+    l.set_backend_type(tiny_dnn::core::backend_t::tiny_dnn);
 
     l.forward_propagation(data.in_buf(), data.out_buf());
     l.back_propagation(data.in_buf(), data.out_buf(), grad1.out_buf(), grad1.in_buf());
@@ -711,37 +731,6 @@ TEST(convolutional, read_write2) {
     serialization_test(layer1, layer2);
 }
 
-
-TEST(convolutional, copy_and_pad_input_valid) {
-
-    conv_params params;
-    params.in        = shape3d(5,5,1);
-    params.weight    = shape3d(3,3,2);
-    params.in_padded = shape3d(5,5,1);
-    params.out       = shape3d(3,3,1);
-    params.pad_type  = padding::valid; // test target
-    params.w_stride  = 1;
-    params.h_stride  = 1;
-
-    Conv2d conv2d_op;
-           conv2d_op.setParams(&params);
-
-    auto create_tensor = [](cnn_size_t batch_size,
-                            cnn_size_t vector_size) {
-        return tensor_t(batch_size, vec_t(vector_size));
-    };
-
-    tensor_t in_tensor = create_tensor(1, 1 * 5 * 5), out_tensor;
-
-    fill_tensor(in_tensor, float_t(1));
-
-    conv2d_op.copy_and_pad_input(in_tensor, out_tensor);
-
-    for (cnn_size_t i = 0; i < out_tensor[0].size(); ++i) {
-        EXPECT_EQ(out_tensor[0][i], float_t(1));
-    }
-}
-
 TEST(convolutional, copy_and_pad_input_same) {
 
     conv_params params;
@@ -753,8 +742,7 @@ TEST(convolutional, copy_and_pad_input_same) {
     params.w_stride  = 1;
     params.h_stride  = 1;
 
-    Conv2d conv2d_op;
-           conv2d_op.setParams(&params);
+    Conv2dPadding conv2d_padding(params);
 
     auto create_tensor = [](cnn_size_t batch_size,
                             cnn_size_t vector_size) {
@@ -774,7 +762,7 @@ TEST(convolutional, copy_and_pad_input_same) {
      *                      0 0 0 0 0
      */
 
-    conv2d_op.copy_and_pad_input(in_tensor, out_tensor);
+    conv2d_padding.copy_and_pad_input(in_tensor, out_tensor);
 
     EXPECT_EQ(out_tensor[0][7],  float_t(0));
     EXPECT_EQ(out_tensor[0][8],  float_t(1));
@@ -783,36 +771,6 @@ TEST(convolutional, copy_and_pad_input_same) {
     EXPECT_EQ(out_tensor[0][11], float_t(1));
     EXPECT_EQ(out_tensor[0][12], float_t(1));
     EXPECT_EQ(out_tensor[0][13], float_t(0));
-}
-
-TEST(convolutional, copy_and_unpad_valid) {
-
-    conv_params params;
-    params.in        = shape3d(5,5,1);
-    params.weight    = shape3d(3,3,2);
-    params.in_padded = shape3d(5,5,1);
-    params.out       = shape3d(3,3,1);
-    params.pad_type  = padding::valid; // test target
-    params.w_stride  = 1;
-    params.h_stride  = 1;
-
-    Conv2d conv2d_op;
-           conv2d_op.setParams(&params);
-
-    auto create_tensor = [](cnn_size_t batch_size,
-                            cnn_size_t vector_size) {
-        return tensor_t(batch_size, vec_t(vector_size));
-    };
-
-    tensor_t in_tensor = create_tensor(1, 1 * 7 * 7), out_tensor;
-
-    fill_tensor(in_tensor, float_t(1));
-
-    conv2d_op.copy_and_unpad_delta(in_tensor, out_tensor);
-
-    for (cnn_size_t i = 0; i < out_tensor[0].size(); ++i) {
-        EXPECT_EQ(out_tensor[0][i], float_t(1));
-    }
 }
 
 TEST(convolutional, copy_and_unpad_delta_same) {
@@ -826,8 +784,7 @@ TEST(convolutional, copy_and_unpad_delta_same) {
     params.w_stride  = 1;
     params.h_stride  = 1;
 
-    Conv2d conv2d_op;
-           conv2d_op.setParams(&params);
+    Conv2dPadding conv2d_padding(params);
 
     auto create_tensor = [](cnn_size_t batch_size,
                             cnn_size_t vector_size) {
@@ -855,7 +812,7 @@ TEST(convolutional, copy_and_unpad_delta_same) {
         }
     }
 
-    conv2d_op.copy_and_unpad_delta(in_tensor, out_tensor);
+    conv2d_padding.copy_and_unpad_delta(in_tensor, out_tensor);
 
     for (cnn_size_t i = 0; i < out_tensor[0].size(); ++i) {
         EXPECT_EQ(out_tensor[0][i], float_t(1));

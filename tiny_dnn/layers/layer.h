@@ -82,6 +82,7 @@ class layer : public node {
               out_type_(out_type) {
         weight_init_ = std::make_shared<weight_init::xavier>();
         bias_init_ = std::make_shared<weight_init::constant>();
+        trainable_ = true;
     }
 
     layer(const layer&) = default;
@@ -267,6 +268,9 @@ class layer : public node {
 
     std::vector<vector_type> out_types() const { return out_type_; }
 
+    void set_trainable(bool trainable) { trainable_ = trainable; }
+
+    bool trainable() const { return trainable_; }
 
     /**
      * return output value range
@@ -505,6 +509,11 @@ class layer : public node {
     }
 
     void init_weight() {
+        if (!trainable_) {
+            initialized_ = true;
+            return;
+        }
+
         for (cnn_size_t i = 0; i < in_channels_; i++) {
             switch (in_type_[i]) {
                 case vector_type::weight:
@@ -531,7 +540,7 @@ class layer : public node {
     void update_weight(optimizer *o, cnn_size_t batch_size) {
         float_t rcp_batch_size = float_t(1) / float_t(batch_size);
         for (size_t i = 0; i < in_type_.size(); i++) {
-            if (is_trainable_weight(in_type_[i])) {
+            if (trainable() && is_trainable_weight(in_type_[i])) {
                 vec_t diff;
                 vec_t& target = *get_weight_data(i);
 
@@ -609,6 +618,7 @@ class layer : public node {
     Device* device_ptr_ = nullptr;
 
  private:
+    bool trainable_;
     std::shared_ptr<weight_init::function> weight_init_;
     std::shared_ptr<weight_init::function> bias_init_;
 
@@ -728,12 +738,13 @@ inline void data_mismatch(const layer& layer, const vec_t& data) {
 
 inline void pooling_size_mismatch(cnn_size_t in_width,
                                   cnn_size_t in_height,
-                                  cnn_size_t pooling_size) {
+                                  cnn_size_t pooling_size_x,
+                                  cnn_size_t pooling_size_y) {
     std::ostringstream os;
 
     os << std::endl;
     os << "WxH:" << in_width << "x" << in_height << std::endl;
-    os << "pooling-size:" << pooling_size << std::endl;
+    os << "pooling-size:" << pooling_size_x << "x" << pooling_size_y << std::endl;
 
     std::string detail_info = os.str();
 

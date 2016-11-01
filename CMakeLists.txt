@@ -18,6 +18,12 @@ if(POLICY CMP0015)
 endif(POLICY CMP0015)
 
 #####
+# Enables project() command manages VERSION variables.
+if(POLICY CMP0048)
+    cmake_policy(SET CMP0048 NEW)
+endif(POLICY CMP0048)
+
+#####
 # Change the default build type from Debug to Release, while still
 # supporting overriding the build type.
 #
@@ -48,6 +54,7 @@ option(USE_NNPACK     "Build tiny-dnn with NNPACK library support" OFF)
 option(USE_OPENCL     "Build tiny-dnn with OpenCL library support" OFF) 
 option(USE_LIBDNN     "Build tiny-dnn with GreenteaLibDNN library support" OFF)
 option(USE_SERIALIZER "Build tiny-dnn with Serialization support" ON)
+option(USE_DOUBLE     "Build tiny-dnn with double precision computations"  OFF)
 
 option(BUILD_TESTS    "Set to ON to build tests"              OFF)
 option(BUILD_EXAMPLES "Set to ON to build examples"           OFF)
@@ -98,6 +105,10 @@ if(NOT USE_SERIALIZER)
     add_definitions(-DCNN_NO_SERIALIZATION)
 endif()
 
+if(USE_DOUBLE)
+    add_definitions(-DCNN_USE_DOUBLE)
+endif()
+
 # Find Open Multi-Processing (OpenMP)
 find_package(OpenMP QUIET)
 if(USE_OMP AND OPENMP_FOUND)
@@ -135,14 +146,14 @@ endif()
 
 # in case that TBB and OMP are not enabled/found,
 # we enable standard C++11 multithread support.
-if((NOT USE_TBB) AND (NOT USE_OMP))
+if((NOT USE_TBB) AND (NOT USE_OMP) AND (NOT WIN32))
     #list(APPEND EXTRA_C_FLAGS -pthread)
     set(USE_PTHREAD ON)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
     message(STATUS "TBB and OMP disabled: Using Pthread instead.")
 else((NOT USE_TBB) AND (NOT USE_OMP))
     set(USE_PTHREAD OFF)
-endif((NOT USE_TBB) AND (NOT USE_OMP))
+endif((NOT USE_TBB) AND (NOT USE_OMP) AND (NOT WIN32))
 
 find_package(OpenCL QUIET)
 if(USE_OPENCL AND OpenCL_FOUND)
@@ -210,21 +221,9 @@ if(CMAKE_COMPILER_IS_GNUCXX OR MINGW OR
 
 	# include extra flags to the compiler
 	# TODO: add info about those flags.
-
     set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wall -Wpedantic -Wno-narrowing")
     set(EXTRA_C_FLAGS_RELEASE "${EXTRA_C_FLAGS_RELEASE} -O3")
     set(EXTRA_C_FLAGS_DEBUG   "${EXTRA_C_FLAGS_DEBUG} -g3 -pthread")
-
-    # setup flags to generate codes coverage
-
-if(FALSE)
-	if(BUILD_TESTS AND COVERALLS)
-		message(STATUS "Code coverage: Enabled")
-		set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -g -O0 -fprofile-arcs -ftest-coverage")
-	else(BUILD_TESTS AND COVERALLS)
-		message(STATUS "Code coverage: Disabled")
-	endif(BUILD_TESTS AND COVERALLS)
-endif()
 elseif(WIN32) # MSVC
 	if(USE_SSE)
 		add_definitions(-DCNN_USE_SSE)

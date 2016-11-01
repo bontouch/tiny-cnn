@@ -591,3 +591,4 @@ void nodes::load_model(InputArchive & ia) {
 
 
 }  // namespace tiny_dnn
+
