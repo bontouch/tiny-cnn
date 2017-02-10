@@ -88,6 +88,36 @@ void parallel_for(int begin, int end, const Func &f, int /*grainsize*/) {
 
 #elif defined(CNN_USE_GCD)
 
+namespace {
+
+template <typename Func>
+struct dispatch_parallel_for_params {
+  dispatch_parallel_for_params(int begin, int end, const Func &f, int blockSize)
+    : begin(begin), end(end), f(f), blockSize(blockSize) {}
+
+  const Func &f;
+  int begin;
+  int end;
+  int blockSize;
+};
+
+template <typename Func>
+void dispatch_parallel_for_work(void *context, size_t index) {
+  const dispatch_parallel_for_params<Func> &params =
+    *static_cast<const dispatch_parallel_for_params<Func> *>(context);
+
+  int blockStart = static_cast<int>(index * params.blockSize);
+  int blockEnd   = blockStart + params.blockSize;
+  if (blockEnd > params.end) {
+    blockEnd = params.end;
+  }
+  assert(blockStart < blockEnd);
+
+  params.f(blocked_range(blockStart, blockEnd));
+}
+
+}  // namespace
+
 template <typename Func>
 void parallel_for(int begin, int end, const Func &f, int grainsize) {
   int count     = end - begin;
@@ -98,17 +128,12 @@ void parallel_for(int begin, int end, const Func &f, int grainsize) {
   int blockCount = (count + blockSize - 1) / blockSize;
   assert(blockCount > 0);
 
-  dispatch_apply(blockCount, dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0),
-                 ^(size_t block) {
-                   int blockStart = static_cast<int>(block * blockSize);
-                   int blockEnd   = blockStart + blockSize;
-                   if (blockEnd > end) {
-                     blockEnd = end;
-                   }
-                   assert(blockStart < blockEnd);
+  dispatch_parallel_for_params<Func> params(begin, end, f, blockSize);
 
-                   f(blocked_range(blockStart, blockEnd));
-                 });
+  dispatch_queue_t queue =
+    dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+  dispatch_apply_f(blockCount, queue, &params,
+                   dispatch_parallel_for_work<Func>);
 }
 
 #elif defined(CNN_SINGLE_THREAD)
