@@ -27,6 +27,7 @@
 Check out the [documentation](http://tiny-dnn.readthedocs.io/) for more info.
 
 ## What's New
+- 2016/11/30 [v1.0.0a3 is released!](https://github.com/tiny-dnn/tiny-dnn/tree/v1.0.0a3)
 - 2016/9/14 [tiny-dnn v1.0.0alpha is released!](https://github.com/tiny-dnn/tiny-dnn/releases/tag/v1.0.0a)
 - 2016/8/7  tiny-dnn is now moved to organization account, and rename into tiny-dnn :)
 - 2016/7/27 [tiny-dnn v0.1.1 released!](https://github.com/tiny-dnn/tiny-dnn/releases/tag/v0.1.1)
@@ -48,16 +49,7 @@ Check out the [documentation](http://tiny-dnn.readthedocs.io/) for more info.
 
 ## Comparison with other libraries
 
-||tiny-dnn|[caffe](https://github.com/BVLC/caffe)|[Theano](https://github.com/Theano/Theano)|[TensorFlow](https://www.tensorflow.org/)|
-|---|---|---|---|---|
-|Prerequisites|__Nothing__(Optional:TBB,OpenMP)|BLAS,Boost,protobuf,glog,gflags,hdf5, (Optional:CUDA,OpenCV,lmdb,leveldb etc)|Numpy,Scipy,BLAS,(optional:nose,Sphinx,CUDA etc)|numpy,six,protobuf,(optional:CUDA,Bazel)|
-|Modeling By|C++ code|Config File|Python Code|Python Code|
-|GPU Support|No|Yes|Yes|Yes|
-|Installing|Unnecessary|Necessary|Necessary|Necessary|
-|Windows Support|Yes|No*|Yes|No*|
-|Pre-Trained Model|Yes(via caffe-converter)|Yes|No*|No*|
-
-*unofficial version is available
+Please see [wiki page](https://github.com/tiny-dnn/tiny-dnn/wiki/Comparison-with-other-libraries).
 
 ## Supported networks
 ### layer-types
@@ -106,7 +98,7 @@ Check out the [documentation](http://tiny-dnn.readthedocs.io/) for more info.
 Nothing. All you need is a C++11 compiler.
 
 ## Build
-tiny-dnn is header-ony, so *there's nothing to build*. If you want to execute sample program or unit tests, you need to install [cmake](https://cmake.org/) and type the following commands:
+tiny-dnn is header-only, so *there's nothing to build*. If you want to execute sample program or unit tests, you need to install [cmake](https://cmake.org/) and type the following commands:
 
 ```
 cmake .
@@ -122,19 +114,25 @@ Some cmake options are available:
 |USE_OMP|Use OpenMP for parallelization|OFF<sup>1</sup>|[OpenMP Compiler](http://openmp.org/wp/openmp-compilers/)|
 |USE_SSE|Use Intel SSE instruction set|ON|Intel CPU which supports SSE|
 |USE_AVX|Use Intel AVX instruction set|ON|Intel CPU which supports AVX|
+|USE_AVX2|Build tiny-dnn with AVX2 library support|OFF|Intel CPU which supports AVX2|
 |USE_NNPACK|Use NNPACK for convolution operation|OFF|[Acceleration package for neural networks on multi-core CPUs](https://github.com/Maratyszcza/NNPACK)|
 |USE_OPENCL|Enable/Disable OpenCL support (experimental)|OFF|[The open standard for parallel programming of heterogeneous systems](https://www.khronos.org/opencl/)|
 |USE_LIBDNN|Use Greentea LinDNN for convolution operation with GPU via OpenCL (experimental)|OFF|[An universal convolution implementation supporting CUDA and OpenCL](https://github.com/naibaf7/libdnn)|
 |USE_SERIALIZER|Enable model serialization|ON<sup>2</sup>|-|
+|USE_DOUBLE|Use double precision computations instead of single precision|OFF|-|
+|USE_ASAN|Use Address Sanitizer|OFF|clang or gcc compiler|
+|USE_IMAGE_API|Enable Image API support|ON|-|
+|USE_GEMMLOWP|Enable gemmlowp support|OFF|-|
 |BUILD_TESTS|Build unit tests|OFF<sup>3</sup>|-|
 |BUILD_EXAMPLES|Build example projects|OFF|-|
 |BUILD_DOCS|Build documentation|OFF|[Doxygen](http://www.doxygen.org/)|
+|PROFILE|Build unit tests|OFF|gprof|
 
 <sup>1</sup> tiny-dnn use c++11 standard library for parallelization by default
 
 <sup>2</sup> If you don't use serialization, you can switch off to speedup compilation time.
 
-<sup>3</sup> tiny-dnn requires picotest as submodule. You need to use ```git submodule update --init``` command to run unit tests
+<sup>3</sup> tiny-dnn uses [Google Test](https://github.com/google/googletest) as default framework to run unit tests. No pre-installation required, it's  automatically downloaded during CMake configuration.
 
 For example, type the following commands if you want to use intel TBB and build tests:
 ```bash
@@ -159,10 +157,10 @@ void construct_cnn() {
     network<sequential> net;
 
     // add layers
-    net << conv<tan_h>(32, 32, 5, 1, 6)  // in:32x32x1, 5x5conv, 6fmaps
-        << ave_pool<tan_h>(28, 28, 6, 2) // in:28x28x6, 2x2pooling
-        << fc<tan_h>(14 * 14 * 6, 120)   // in:14x14x6, out:120
-        << fc<identity>(120, 10);        // in:120,     out:10
+    net << conv(32, 32, 5, 1, 6) << tanh()  // in:32x32x1, 5x5conv, 6fmaps
+        << ave_pool(28, 28, 6, 2) << tanh() // in:28x28x6, 2x2pooling
+        << fc(14 * 14 * 6, 120) << tanh()   // in:14x14x6, out:120
+        << fc(120, 10);                     // in:120,     out:10
 
     assert(net.in_data_size() == 32 * 32);
     assert(net.out_data_size() == 10);
@@ -178,7 +176,7 @@ void construct_cnn() {
     adagrad optimizer;
 
     // train (50-epoch, 30-minibatch)
-    net.train<mse>(optimizer, train_images, train_labels, 30, 50);
+    net.train<mse, adagrad>(optimizer, train_images, train_labels, 30, 50);
 
     // save
     net.save("net");
@@ -199,8 +197,7 @@ using namespace tiny_dnn::layers;
 void construct_mlp() {
     network<sequential> net;
 
-    net << fc<sigmoid>(32 * 32, 300)
-        << fc<identity>(300, 10);
+    net << fc(32 * 32, 300) << sigmoid() << fc(300, 10);
 
     assert(net.in_data_size() == 32 * 32);
     assert(net.out_data_size() == 10);
@@ -215,7 +212,7 @@ using namespace tiny_dnn;
 using namespace tiny_dnn::activation;
 
 void construct_mlp() {
-    auto mynet = make_mlp<tan_h>({ 32 * 32, 300, 10 });
+    auto mynet = make_mlp<tanh>({ 32 * 32, 300, 10 });
 
     assert(mynet.in_data_size() == 32 * 32);
     assert(mynet.out_data_size() == 10);
@@ -226,7 +223,7 @@ more sample, read examples/main.cpp or [MNIST example](https://github.com/tiny-d
 
 ## Contributing
 Since deep learning community is rapidly growing, we'd love to get contributions from you to accelerate tiny-dnn development!
-For a quick guide to contributing, take a look at the [Contribution Documents](docs/developer_guides/How-to-contribute.md).
+For a quick guide to contributing, take a look at the [Contribution Documents](CONTRIBUTING.md).
 
 ## References
 [1] Y. Bengio, [Practical Recommendations for Gradient-Based Training of Deep Architectures.](http://arxiv.org/pdf/1206.5533v2.pdf) 

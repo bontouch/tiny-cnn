@@ -10,39 +10,39 @@ You can construct networks by chaining ```operator <<``` from top(input) to bott
 ```cpp
 // input: 32x32x1 (1024 dimensions)  output: 10
 network<sequential> net;
-net << convolutional_layer<tan_h>(32, 32, 5, 1, 6) // 32x32in, conv5x5
-    << average_pooling_layer<tan_h>(28, 28, 6, 2) // 28x28in, pool2x2
-    << fully_connected_layer<tan_h>(14 * 14 * 6, 120)
-    << fully_connected_layer<identity>(120, 10);
+net << convolutional_layer(32, 32, 5, 1, 6) << tanh() // 32x32in, conv5x5
+    << average_pooling_layer(28, 28, 6, 2) << tanh()  // 28x28in, pool2x2
+    << fully_connected_layer(14 * 14 * 6, 120) << tanh()
+    << fully_connected_layer(120, 10);
 ```
 
 ```cpp
 // input: 32x32x3 (3072 dimensions)  output: 40
 network<sequential> net;
-net << convolutional_layer<relu>(32, 32, 5, 3, 9)
-    << average_pooling_layer<relu>(28, 28, 9, 2)
-    << fully_connected_layer<tan_h>(14 * 14 * 9, 120)
-    << fully_connected_layer<softmax>(120, 40);
+net << convolutional_layer(32, 32, 5, 3, 9) << relu()
+    << average_pooling_layer(28, 28, 9, 2) << relu()
+    << fully_connected_layer(14 * 14 * 9, 120) << tanh()
+    << fully_connected_layer(120, 40) << softmax();
 ```
 
 If you feel these syntax a bit redundant, you can also use "shortcut" names defined in tiny_dnn.h.
 ```cpp
 using namespace tiny_dnn::layers;
-net << conv<relu>(32, 32, 5, 3, 9)
-    << ave_pool<relu>(28, 28, 9, 2)
-    << fc<tan_h>(14 * 14 * 9, 120)
-    << fc<softmax>(120, 40);
+net << conv(32, 32, 5, 3, 9) << relu()
+    << ave_pool(28, 28, 9, 2) << relu()
+    << fc(14 * 14 * 9, 120) << tanh()
+    << fc(120, 40) << softmax();
 ```
 
 If your network is simple mlp(multi-layer perceptron), you can also use ```make_mlp``` function.
 ```cpp
-auto mynet = make_mlp<tan_h>({ 32 * 32, 300, 10 });
+auto mynet = make_mlp<tanh>({ 32 * 32, 300, 10 });
 ```
 It is equivalent to:
 ```cpp
 network<sequential> mynet;
-mynet << fully_conneceted_layer<tan_h>(32*32, 300)
-      << fully_connectted_layer<tan_h>(300, 10);
+mynet << fully_connected_layer(32 * 32, 300) << tanh()
+      << fully_connected_layer(300, 10) << tanh();
 ```
 
 ### graph model
@@ -54,11 +54,12 @@ After connecting all layers, call ```construct_graph``` function to register nod
 layers::input in1(shape3d(3, 1, 1));
 layers::input in2(shape3d(3, 1, 1));
 layers::add added(2, 3);
-layers::fc<relu> out(3, 2);
+layers::fc out(3, 2);
+activation::relu r();
 
 // connect
 (in1, in2) << added;
-added << out;
+added << out << r;
 
 // register to graph
 network<graph> net;
@@ -71,7 +72,8 @@ Use ```network::fit``` function to train. Specify loss function by template para
 ```cpp
 network<sequential> net;
 adagrad opt;
-net << layers::fc<tan_h>(2,3) << layers::fc<softmax>(3,1);
+net << layers::fc(2, 3) << activation::tanh() 
+    << layers::fc(3, 1) << activation::softmax();
 
 // 2training data, each data type is 2-dimensional array
 std::vector<vec_t> input_data  { { 1, 0 }, { 0, 2 } };
@@ -109,7 +111,8 @@ As with regression task, you can use ```network::fit``` function in classificati
 ```cpp
 network<sequential> net;
 adagrad opt;
-net << layers::fc<tan_h>(2,3) << layers::fc<softmax>(3,4);
+net << layers::fc(2, 3) << activation::tanh()
+    << layers::fc(3, 4) << activation::softmax();
 
 // input_data[0] should be classified to id:3
 // input_data[1] should be classified to id:1
@@ -128,12 +131,13 @@ network<graph>    net;
 layers::input     in1(2);
 layers::input     in2(2);
 layers::concat    concat(2, 2);
-layers::fc<relu> fc(4, 2);
+layers::fc        fc(4, 2);
+activation::relu  r();
 adagrad opt;
 
 (in1, in2) << concat;
-concat << fc;
-construct_graph(net, { &in1, &in2 }, { &fc });
+concat << fc << r;
+construct_graph(net, { &in1, &in2 }, { &r });
 
 // 2training data, each data type is tensor_t and shape is [2x2]
 //
@@ -172,10 +176,7 @@ nn.train<cross_entropy>(optimizer, train_images, train_labels, 50, 20, [](){},
          });
 ```
 
-### train unbalanced data
-
-
-## "freeze" layers
+### "freeze" layers
 
 You can use ```layer::set_trainable``` to exclude a layer from updating its weights.
 
@@ -214,7 +215,7 @@ void predict_mnist(network<sequential>& net, const vec_t& in) {
 ```
 
 ### evaluate accuracy
-### caluculate the loss
+### calculate the loss
 
 ```cpp
 std::vector<vec_t> test_data;
@@ -243,9 +244,10 @@ We can get graph structure in dot language format.
 input_layer in1(shape3d(3,1,1));
 input_layer in2(shape3d(3,1,1));
 add added(2, 3);
-linear_layer<relu> linear(3);
+linear_layer linear(3);
+relu_layer relu();
 
-(in1, in2) << added << linear;
+(in1, in2) << added << linear << relu;
 network<graph> net;
 
 construct_graph(net, { &in1, &in2 }, { &linear } );
@@ -271,9 +273,9 @@ Then you can get:
 ```cpp
 network<sequential> nn;
 
-nn << convolutional_layer<tan_h>(32, 32, 5, 3, 6)
-    << max_pooling_layer<tan_h>(28, 28, 6, 2)
-    << fully_connected_layer<tan_h>(14 * 14 * 6, 10);
+nn << convolutional_layer(32, 32, 5, 3, 6) << tanh()
+    << max_pooling_layer(28, 28, 6, 2) << tanh()
+    << fully_connected_layer(14 * 14 * 6, 10) << tanh();
 ...
 image img = nn[0]->output_to_image(); // visualize activations of recent input
 img.write("layer0.bmp");
@@ -283,11 +285,11 @@ img.write("layer0.bmp");
 ```cpp
 network<sequential> nn;
 
-nn << conv<tan_h>(32, 32, 5, 3, 6)
-    << max_pool<tan_h>(28, 28, 6, 2)
-    << fc<tan_h>(14 * 14 * 6, 10);
+nn << conv(32, 32, 5, 3, 6) << tanh()
+    << max_pool(28, 28, 6, 2) << tanh()
+    << fc(14 * 14 * 6, 10) << tanh();
 ...
-image img = nn.at<conv<tan_h>>(0).weight_to_image();
+image img = nn.at<conv>(0).weight_to_image();
 img.write("kernel0.bmp");
 ```
 
@@ -299,9 +301,9 @@ You can use ```network::save``` and ```network::load``` to save/load your model:
 ```cpp
 network<sequential> nn;
 
-nn << convolutional_layer<tan_h>(32, 32, 5, 3, 6)
-    << max_pooling_layer<tan_h>(28, 28, 6, 2)
-    << fully_connected_layer<tan_h>(14 * 14 * 6, 10);
+nn << convolutional_layer(32, 32, 5, 3, 6) << tanh()
+    << max_pooling_layer(28, 28, 6, 2) << tanh()
+    << fully_connected_layer(14 * 14 * 6, 10) << tanh();
 ...
 
 nn.save("my-network");
@@ -363,14 +365,58 @@ vector<label_t> labels;
 parse_cifar10("data_batch1.bin", &images, &labels, -1.0, 1.0, 0, 0); 
 ```
 
+### reading images
+You can use a simple ```tiny_dnn::image``` class to handle your images. JPEG (baseline & progressive), PNG (1/2/4/8 bit per channel), BMP (non-1bp, non-RLE), GIF are supported reading formats. Note that it's memory layout differs from OpenCV - it's layout is KHW (K:channels, H:height, W:width).
+
+```cpp
+// default underlying type is uint8_t, and memory layout is KHW
+// consider following 2x2 RGB image:
+//
+// R = [R0, R1,  G = [G0, G1,  B = [B0, B1,
+//      R2, R3]       G2, G3]       B2, B3]
+//
+// memory layout of tiny_dnn::image is KHW, and order of channels K depends on its image_type:
+//
+// gray_img = { gray(R0,G0,B0), gray(R1,G1,B1), gray(R2,G2,B2), gray(R3,G3,B3) }
+// rgb_img = { R0, R1, R2, R3, G0, G1, G2, G3, B0, B1, B2, B3 }
+// bgr_img = { B0, B1, B2, B3, G0, G1, G2, G3, R0, R1, R2, R3 }
+//
+// gray(r,g,b) = 0.300r + 0.586g + 0.113b
+image<> gray_img("your-image.bmp", image_type::grayscale);
+image<> rgb_img("your-image.bmp", image_type::rgb);
+image<> bgr_img("your-image.bmp", image_type::bgr);
+
+// convert into tiny-dnn's interface type
+vec_t vec = img.to_vec();
+
+// convert into HWK format with RGB order like:
+// { R0, G0, B0, R1, G1, B1, R2, G2, B2, R3, G3, B3 }
+std::vector<uint8_t> rgb = rgb_img.to_rgb();
+
+// load data from HWK ordered array
+rgb_img.from_rgb(rgb.begin(), rgb.end());
+
+// resize image
+image<> resized = resize_image(rgb_img, 256, 256);
+
+// get the mean values (per channel)
+image<float_t> mean = mean_image(resized);
+
+// subtract mean values from image
+image<float_t> subtracted = subtract_scalar(resized, mean);
+
+// png,bmp are supported as saving types
+subtracted.save("subtracted.png");
+```
+
 ## get/set the properties
 ### traverse layers
 
 ```cpp
 // (1) get layers by operator[]
 network<sequential> net;
-net << conv<tan_h>(...)
-    << fc<softmax>(...);
+net << conv(...)
+    << fc(...);
 
 layer* conv = net[0];
 layer* fully_connected = net[1];
@@ -388,8 +434,8 @@ for (layer* l : net) {
 //     you can get derived class,
 
 // throw nn_error if n-th layer can't be trated as T
-conv<tan_h>* conv = net.at<conv<tan_h>>(0);
-fc<softmax>* fully_connected = net.at<fc<softmax>>(1);
+conv* conv = net.at<conv>(0);
+fc* fully_connected = net.at<fc>(1);
 ```
 
 ```cpp
@@ -410,9 +456,9 @@ You can access each layer by operator[] after construction.
 ...
 network<sequential> nn;
 
-nn << convolutional_layer<tan_h>(32, 32, 5, 3, 6)
-    << max_pooling_layer<tan_h>(28, 28, 6, 2)
-    << fully_connected_layer<tan_h>(14 * 14 * 6, 10);
+nn << convolutional_layer(32, 32, 5, 3, 6) << tanh()
+    << max_pooling_layer(28, 28, 6, 2) << tanh()
+    << fully_connected_layer(14 * 14 * 6, 10) << tanh();
 
 for (int i = 0; i < nn.depth(); i++) {
     cout << "#layer:" << i << "\n";
@@ -459,7 +505,7 @@ To change initialization method (or weight-filler) and scaling factor, use ```we
 
 ```cpp
 int num_units [] = { 100, 400, 100 };
-auto nn = make_mlp<tan_h>(num_units, num_units + 3);
+auto nn = make_mlp<tanh>(num_units, num_units + 3);
 
 // change all layers at once
 nn.weight_init(weight_init::lecun());
@@ -522,5 +568,3 @@ try {
    cout << e.what();
 }
 ```
-
-### run tiny-dnn without exceptions
